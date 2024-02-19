@@ -44,6 +44,17 @@ def get_users():
 
     return jsonify(all_users), 200
 
+@app.route('/user/favorites/', methods=['GET'])
+def get_users_fav():
+    id = 1
+    current_user = User.query.get(id)
+    if not current_user:
+        return jsonify({"message": "User not found"}), 404
+    user_favorites = Favorite.query.filter_by(user=current_user).all()
+    user_favorites = list(map(lambda x: x.serialize(), user_favorites))
+
+    return jsonify(user_favorites), 200
+
 @app.route('/characters', methods=['GET'])
 def get_characters():
 
@@ -52,6 +63,21 @@ def get_characters():
 
     return jsonify(all_characters), 200
 
+@app.route('/characters/<int:character_id>', methods=['GET'])
+def handle_character_id(character_id):
+    character = Character.query.get(character_id)
+    if character:
+        character_info = {
+            "character_id": character.character_id,
+            "name": character.name,
+            "gender": character.gender,
+            "film_id": character.film_id,
+            "homeworld_id": character.homeworld_id,
+        }
+        return jsonify(character_info), 200
+    else:
+        return jsonify({"msg": "Character doesn't exist"}), 404
+
 @app.route('/planets', methods=['GET'])
 def get_planets():
 
@@ -59,6 +85,21 @@ def get_planets():
     all_planets = list(map(lambda x: x.serialize(), all_planets))
 
     return jsonify(all_planets), 200
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def handle_planet_id(planet_id):
+    planet = Planet.query.get(planet_id)
+    if planet:
+        planet_info = {
+            "planet_id": planet.planet_id,
+            "name": planet.name,
+            "climate": planet.climate,
+            "film_id" : planet.film_id,
+            "resident_id": planet.resident_id,
+        }
+        return jsonify(planet_info), 200
+    else:
+        return jsonify({"msg": "Planet doesn't exist"}), 404
 
 @app.route('/films', methods=['GET'])
 def get_films():
