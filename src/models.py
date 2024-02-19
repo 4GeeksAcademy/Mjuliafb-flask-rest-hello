@@ -16,34 +16,12 @@ class User(db.Model):
             "username": self.username
             # do not serialize the password, its a security breach
         }
-    
-class Character(db.Model):
-    __tablename__ = "character"
-    character_id = db.Column(db.Integer, primary_key=True)
-    gender = db.Column(db.String(40))
-    name = db.Column(db.String(40), unique=True, nullable=False)
-    film_id = db.Column(db.Integer, nullable=False)
-    homeworld_id = db.Column(db.Integer, nullable=False)
-
-    def __repr__(self):
-        return '<Character %r>' % self.name
-
-    def serialize(self):
-        return {
-            "character_id": self.character_id,
-            "name": self.name,
-            "gender": self.gender,
-            "film_id" : self.film_id,
-            "homeworld_id": self.homeworld_id,
-        }
-
 class Planet(db.Model):
     __tablename__ = "planet"
     planet_id = db.Column(db.Integer, primary_key=True)
     climate = db.Column(db.String(200))
     name = db.Column(db.String(40), nullable=False)
-    resident_id = db.Column(db.Integer,db.ForeignKey('character.character_id') ,nullable=False)
-    character= db.relationship(Character)
+    resident_id = db.Column(db.Integer ,nullable=False)
     film_id = db.Column(db.Integer,nullable=False) 
 
     def __repr__(self):
@@ -56,6 +34,27 @@ class Planet(db.Model):
             "climate": self.climate,
             "film_id" : self.film_id,
             "resident_id": self.resident_id,
+        }
+        
+class Character(db.Model):
+    __tablename__ = "character"
+    character_id = db.Column(db.Integer, primary_key=True)
+    gender = db.Column(db.String(40))
+    name = db.Column(db.String(40), unique=True, nullable=False)
+    film_id = db.Column(db.Integer, nullable=False)
+    homeworld_id = db.Column(db.Integer,db.ForeignKey('planet.planet_id'), nullable=False)
+    planet = db.relationship(Planet)
+
+    def __repr__(self):
+        return '<Character %r>' % self.name
+
+    def serialize(self):
+        return {
+            "character_id": self.character_id,
+            "name": self.name,
+            "gender": self.gender,
+            "film_id" : self.film_id,
+            "homeworld_id": self.homeworld_id,
         }
 
 class Film(db.Model):

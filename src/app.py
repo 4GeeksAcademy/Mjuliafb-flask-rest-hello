@@ -86,6 +86,28 @@ def get_planets():
 
     return jsonify(all_planets), 200
 
+@app.route('/planets', methods=['POST'])
+def add_planet():
+    body = request.get_json()
+    climate = body.get('climate')
+    name = body.get('name')
+    resident_id = body.get('resident_id')
+    film_id = body.get('film_id')
+    
+    required_fields = [climate, name, resident_id, film_id]
+
+    if any(field is None for field in required_fields):
+        return jsonify({'error': 'You must provide climate, name, resident_id, and film_id'}), 400
+    
+    try:
+        new_planet = Planet(climate=climate, name=name,resident_id = resident_id, film_id = film_id )
+        db.session.add(new_planet)
+        db.session.commit()
+        return jsonify({'response': 'Planet added successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
 @app.route('/planets/<int:planet_id>', methods=['GET'])
 def handle_planet_id(planet_id):
     planet = Planet.query.get(planet_id)
@@ -116,6 +138,26 @@ def get_favorites():
     all_favorites = list(map(lambda x: x.serialize(), all_favorites))
 
     return jsonify(all_favorites), 200
+
+@app.route('/favorites', methods=['POST'])
+def add_favorites():
+    body = request.get_json()
+    user_id = 1 
+    character_id = body.get('character_id')
+    planet_id = body.get('planet_id')
+    
+    if character_id is None and planet_id is None:
+        return jsonify({'error': 'You must provide either character_id or planet_id'}), 400
+    
+    try:
+        new_favorite = Favorite(user_id=user_id, character_id=character_id, planet_id=planet_id)
+        db.session.add(new_favorite)
+        db.session.commit()
+        return jsonify({'response': 'Favorite added successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
 
 
 # this only runs if `$ python src/app.py` is executed
