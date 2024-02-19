@@ -77,6 +77,28 @@ def handle_character_id(character_id):
         return jsonify(character_info), 200
     else:
         return jsonify({"msg": "Character doesn't exist"}), 404
+      
+@app.route('/characters', methods=['POST'])
+def add_characters():
+    body = request.get_json()
+    gender = body.get('gender')
+    name = body.get('name')
+    homeworld_id = body.get('homeworld_id')
+    film_id = body.get('film_id')
+
+    required_fields = [gender, name, homeworld_id, film_id]
+
+    if any(field is None for field in required_fields):
+        return jsonify({'error': 'You must provide gender, name, homeworld_id and film_id'}), 400
+    
+    try:
+        new_character = Character(gender=gender, name=name,homeworld_id = homeworld_id, film_id = film_id )
+        db.session.add(new_character)
+        db.session.commit()
+        return jsonify({'response': 'Character added successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/planets', methods=['GET'])
 def get_planets():
@@ -142,7 +164,7 @@ def get_favorites():
 @app.route('/favorites', methods=['POST'])
 def add_favorites():
     body = request.get_json()
-    user_id = 1 
+    user_id = 1
     character_id = body.get('character_id')
     planet_id = body.get('planet_id')
     
@@ -157,7 +179,40 @@ def add_favorites():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+    
+@app.route('/favorites/planet/<int:planet_id>', methods=['POST'])
+def add_favorite_planet(planet_id):
+    user_id = 1
+    requested_planet_id = Planet.query.get(planet_id)
+    
+    if requested_planet_id is None:
+        return jsonify({'error': 'You must provide a planet_id'}), 400
+    
+    try:
+        new_favorite_planet = Favorite(user_id=user_id, planet_id=requested_planet_id.planet_id)
+        db.session.add(new_favorite_planet)
+        db.session.commit()
+        return jsonify({'response': 'Favorite planet added successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
+@app.route('/favorites/characters/<int:character_id>', methods=['POST'])
+def add_favorite_character(character_id):
+    user_id = 1
+    requested_character_id = Character.query.get(character_id)
+    
+    if requested_character_id is None:
+        return jsonify({'error': 'You must provide a character_id'}), 400
+    
+    try:
+        new_favorite_character = Favorite(user_id=user_id, character_id=requested_character_id.character_id)
+        db.session.add(new_favorite_character)
+        db.session.commit()
+        return jsonify({'response': 'Favorite character added successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400  
 
 
 # this only runs if `$ python src/app.py` is executed
