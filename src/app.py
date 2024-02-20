@@ -196,6 +196,38 @@ def add_favorite_planet(planet_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+    
+@app.route('/favorites/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(planet_id):
+    user_id = 1
+    requested_planet = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id).first()
+    
+    if requested_planet is None:
+        return jsonify({'error': 'You must provide a planet_id'}), 400
+    
+    try:
+        db.session.delete(requested_planet)
+        db.session.commit()
+        return jsonify({'response': 'Favorite planet deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400    
+    
+@app.route('/favorites/chaaracter/<int:character_id>', methods=['DELETE'])
+def delete_favorite_character(character_id):
+    user_id = 1
+    requested_character = Favorite.query.filter_by(user_id=user_id, character_id=character_id).first()
+    
+    if requested_character is None:
+        return jsonify({'error': 'You must provide a character_id'}), 400
+    
+    try:
+        db.session.delete(requested_character)
+        db.session.commit()
+        return jsonify({'response': 'Favorite character deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400       
 
 @app.route('/favorites/characters/<int:character_id>', methods=['POST'])
 def add_favorite_character(character_id):
